@@ -176,5 +176,21 @@ funannotate train \
   --cpus $SLURM_NTASKS_PER_NODE
 
 ```
+- I obtained an error in the transdecoder, which I was able to fix by adjusting the path:
+
+```
+# 1) Verifica dónde está el script
+echo "$CONDA_PREFIX"
+ls -l "$CONDA_PREFIX/opt/transdecoder/util/cdna_alignment_orf_to_genome_orf.pl"
+
+# 2) Añade TransDecoder util (y scripts de PASA) al PATH para esta sesión
+export PASAHOME="$CONDA_PREFIX/opt/pasa-2.5.3"
+export PATH="$CONDA_PREFIX/opt/transdecoder/util:$PASAHOME/scripts:$PATH"
+
+# 3) Comprueba que ahora se ve:
+which cdna_alignment_orf_to_genome_orf.pl
+```
+
+
 
 
