@@ -69,7 +69,15 @@ conda activate funannotate
 echo "$TRINITY_HOME"
 "$TRINITY_HOME"/Trinity --version
 ```
-5) Download GeneMark software in this [link](http://topaz.gatech.edu/GeneMark/license_download.cgi). I downloaded the software GeneMark-ES/ET/EP+ ver 4.72_lic and the operating system LINUX 64 kernel 3.10 - 5. Also, it is important to download the key and then configure permissions in the cluster. As seen in the scripts of the second section of the pipeline (fun-predict) I used Jon's Hoffmans path for genemark (not sure why mine was not working). However, I did have to download the key license and give it access. 
+5) Download GeneMark software in this [link](http://topaz.gatech.edu/GeneMark/license_download.cgi). I downloaded the software GeneMark-ES/ET/EP+ ver 4.72_lic and the operating system LINUX 64 kernel 3.10 - 5. Also, it is important to download the key and then configure permissions in the cluster. As seen in the scripts of the second section of the pipeline (fun-predict) I used Jon's Hoffmans path for genemark (not sure why mine was not working). However, I did have to download the key license and give it access. To gibe it access I did the following command:
+
+```
+cat > ~/.gm_key
+#Then I copied the license I downloaded
+
+#Grant permits:
+chmod 600 ~/.gm_key
+```
 
 6) I had problems with jellyfish because my job was trying to read jellyfish from the funannotate environment instead of the trinity environment. The following commands are just adjusting the paths so that jellyfish is read from the trinity environment.
 
@@ -191,6 +199,75 @@ export PATH="$CONDA_PREFIX/opt/transdecoder/util:$PASAHOME/scripts:$PATH"
 which cdna_alignment_orf_to_genome_orf.pl
 ```
 
+- The training section took around 6 days to complete the job. 
 
+### 3) Predict step
 
+First, download the "tetrapoda" database (for some reason, this is not downloaded with the initial DB download). 
+
+```
+funannotate setup -d "$FUNANNOTATE_DB" -b tetrapoda
+```
+
+Then I ran the following script for the "predict" section: 
+
+```
+#!/bin/sh
+#SBATCH --job-name funpredict
+#SBATCH --nodes=1
+#SBATCH --tasks-per-node=48
+#SBATCH --mem=370gb 
+#SBATCH --time=150:00:00
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=dgarcia@amnh.org
+
+source ~/.bash_profile
+conda activate funannotate
+
+cd /home/dgarcia/mendel-nas1/PacBio/Helicops_angulatus_Aug2024/funannotate/03_train
+
+export FUNANNOTATE_DB=/home/dgarcia/mendel-nas1/PacBio/Helicops_angulatus_Aug2024/funannotate/02_db/funannotate_db
+export GENEMARK_PATH=/home/jhoffman1/mendel-nas1/fasciatus_genome/funannotate/gmes_linux_64_4
+
+# Rutas
+GENOME_FA="/home/dgarcia/mendel-nas1/PacBio/Helicops_angulatus_Aug2024/funannotate/01_inputData/Helicops_angulatus_18Oct2024.softmasked.fasta"
+OUT_DIR="/home/dgarcia/mendel-nas1/PacBio/Helicops_angulatus_Aug2024/funannotate/03_train/fun_train_out"
+
+#Predict
+funannotate predict -i "${GENOME_FA}" -o "${OUT_DIR}" --species "Helicops angulatus" \
+    --busco_db tetrapoda \
+    --organism other \
+    --busco_seed_species Taeniopygia_guttata \
+    --repeats2evm \
+    --cpus $SLURM_NTASKS_PER_NODE
+```
+
+- The predicting section took ~24 hours to complete the job.
+
+### 4) Update section
+
+This step takes a lot of disk memory and time (please make sure you have space in your account- my job failed in the middle because of limited disk quota). Here is the script I used for the Update step: 
+
+```
+#!/bin/sh
+#SBATCH --job-name funupdate
+#SBATCH --nodes=1
+#SBATCH --tasks-per-node=12
+#SBATCH --mem=250gb
+#SBATCH --time=250:00:00
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=dgarcia@amnh.org
+
+source ~/.bash_profile
+conda activate funannotate
+
+cd /home/dgarcia/mendel-nas1/PacBio/Helicops_angulatus_Aug2024/funannotate/03_train
+
+export GENEMARK_PATH=/home/jhoffman1/mendel-nas1/fasciatus_genome/funannotate/gmes_linux_64_4
+export FUNANNOTATE_DB=/home/dgarcia/mendel-nas1/PacBio/Helicops_angulatus_Aug2024/funannotate/02_db/funannotate_db
+
+funannotate update -i fun_train_out --cpus $SLURM_NTASKS_PER_NODE
+```
+
+- The updating section took ~xxx days to complete the job.
 
