@@ -275,7 +275,11 @@ The results from the update look like this:
 
 <img width="1203" height="781" alt="Screenshot 2025-09-21 at 5 06 01 PM" src="https://github.com/user-attachments/assets/6f5c45d0-3f21-4107-9cb2-ff5fdbcc6e8f" />
 
-The output file says we have two genes "FUN_003938" and "FUN_016223" with internal stops. To fix these two genes, I will enter the tbl file and manually change their status to pseudogenes. 
+The output file says we have two genes "FUN_003938" and "FUN_016223" with internal stops. I eliminated these two gene models from the .tbl file. However, I left an intact copy of the original .tbl file named "Helicops_angulatus.BAK.tbl" in case I need to come back and fix these two gene models. Now we can run the fixing step. 
+
+### 5) Fix section
+
+
 
 
 
