@@ -269,5 +269,14 @@ export FUNANNOTATE_DB=/home/dgarcia/mendel-nas1/PacBio/Helicops_angulatus_Aug202
 funannotate update -i fun_train_out --cpus $SLURM_NTASKS_PER_NODE
 ```
 
-- The updating section took ~xxx days to complete the job.
+- The updating section took ~9 days to complete the job.
+
+The results from the update look like this: 
+
+<img width="1203" height="781" alt="Screenshot 2025-09-21 at 5 06 01 PM" src="https://github.com/user-attachments/assets/6f5c45d0-3f21-4107-9cb2-ff5fdbcc6e8f" />
+
+The output file says we have two genes "FUN_003938" and "FUN_016223" with internal stops. To fix these two genes, I will enter the tbl file and manually change their status to pseudogenes. 
+
+
+
 
